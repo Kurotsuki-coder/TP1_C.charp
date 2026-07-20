@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
+using Serilog;
 
 namespace GestionEtudiantWinForms
 {
@@ -24,10 +25,16 @@ namespace GestionEtudiantWinForms
         public Form1()
         {
             InitializeComponent();
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
         }
 
         private async void Form1_Load(object sender, EventArgs e)
         {
+            Log.Information("Application WinForms démarrée");
             await ChargerEtudiants();
         }
 
@@ -35,12 +42,14 @@ namespace GestionEtudiantWinForms
         {
             try
             {
+                Log.Information("Chargement de la liste des étudiants");
                 var response = await client.GetStringAsync(apiUrl);
                 var liste = JsonConvert.DeserializeObject<List<Etudiant>>(response);
                 dataGridView1.DataSource = liste;
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Erreur lors du chargement des étudiants");
                 MessageBox.Show(
                     "Erreur lors du chargement : " + ex.Message,
                     "Erreur",
@@ -67,12 +76,14 @@ namespace GestionEtudiantWinForms
                 var response = await client.PostAsync(apiUrl, content);
                 response.EnsureSuccessStatusCode();
 
+                Log.Information("Étudiant ajouté avec succès : {Nom} {Prenom}", etudiant.Nom, etudiant.Prenom);
                 MessageBox.Show("Étudiant ajouté avec succès");
                 ViderChamps();
                 await ChargerEtudiants();
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Erreur lors de l'ajout de l'étudiant");
                 MessageBox.Show(
                     "Erreur lors de l'ajout : " + ex.Message,
                     "Erreur",
@@ -108,12 +119,14 @@ namespace GestionEtudiantWinForms
                 var response = await client.PutAsync(apiUrl + "/" + id, content);
                 response.EnsureSuccessStatusCode();
 
+                Log.Information("Étudiant {Id} modifié avec succès", id);
                 MessageBox.Show("Étudiant modifié avec succès");
                 ViderChamps();
                 await ChargerEtudiants();
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Erreur lors de la modification de l'étudiant");
                 MessageBox.Show(
                     "Erreur lors de la modification : " + ex.Message,
                     "Erreur",
@@ -148,12 +161,14 @@ namespace GestionEtudiantWinForms
                 var response = await client.DeleteAsync(apiUrl + "/" + id);
                 response.EnsureSuccessStatusCode();
 
+                Log.Information("Étudiant {Id} supprimé avec succès", id);
                 MessageBox.Show("Étudiant supprimé avec succès");
                 ViderChamps();
                 await ChargerEtudiants();
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Erreur lors de la suppression de l'étudiant");
                 MessageBox.Show(
                     "Erreur lors de la suppression : " + ex.Message,
                     "Erreur",

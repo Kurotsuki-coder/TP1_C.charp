@@ -1,0 +1,17 @@
+# Dossiers de build
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Packages NuGet (packages.config style)
+packages/
+
+# Logs générés par Serilog
+logs/
+
+# Fichiers de lancement locaux
+*.slnLaunch.user
